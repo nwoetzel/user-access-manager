@@ -139,10 +139,10 @@ class UserAccessManager
         $aBlogIds = array();
 
         if (is_multisite()) {
-            $aBlogIds = $wpdb->get_col(
+            $aBlogIds = $wpdb->get_col( $wpdb->prepare(
                 "SELECT blog_id
-                FROM ".$wpdb->blogs
-            );
+                 FROM %s", $wpdb->blogs
+            ));
         }
 
         return $aBlogIds;
@@ -193,14 +193,14 @@ class UserAccessManager
 
         $sDbAccessGroupTable = $wpdb->prefix.'uam_accessgroups';
 
-        $sDbUserGroup = $wpdb->get_var(
+        $sDbUserGroup = $wpdb->get_var( $wpdb->prepare(
             "SHOW TABLES
-            LIKE '".$sDbAccessGroupTable."'"
-        );
+            LIKE '%s'", $sDbAccessGroupTable
+        ));
 
         if ($sDbUserGroup != $sDbAccessGroupTable) {
             dbDelta(
-                "CREATE TABLE ".$sDbAccessGroupTable." (
+                "CREATE TABLE $sDbAccessGroupTable (
                     ID int(11) NOT NULL auto_increment,
                     groupname tinytext NOT NULL,
                     groupdesc text NOT NULL,
@@ -214,14 +214,14 @@ class UserAccessManager
 
         $sDbAccessGroupToObjectTable = $wpdb->prefix.'uam_accessgroup_to_object';
 
-        $sDbAccessGroupToObject = $wpdb->get_var(
+        $sDbAccessGroupToObject = $wpdb->get_var( $wpdb->prepare(
             "SHOW TABLES
-            LIKE '".$sDbAccessGroupToObjectTable."'"
-        );
+            LIKE '%s'", $sDbAccessGroupToObjectTable
+        ));
 
         if ($sDbAccessGroupToObject != $sDbAccessGroupToObjectTable) {
             dbDelta(
-                "CREATE TABLE " . $sDbAccessGroupToObjectTable . " (
+                "CREATE TABLE $sDbAccessGroupToObjectTable (
                     object_id VARCHAR(11) NOT NULL,
                     object_type varchar(255) NOT NULL,
                     group_id int(11) NOT NULL,
@@ -318,38 +318,46 @@ class UserAccessManager
 
         $sDbAccessGroup = $wpdb->prefix.'uam_accessgroups';
 
-        $sDbUserGroup = $wpdb->get_var(
+        $sDbUserGroup = $wpdb->get_var( $wpdb->prepare(
             "SHOW TABLES
-            LIKE '".$sDbAccessGroup."'"
-        );
+             LIKE '%s'", $sDbAccessGroup
+        ));
 
         if (version_compare($sCurrentDbVersion, $this->_sUamDbVersion) === -1) {
             if (version_compare($sCurrentDbVersion, "1.0") === 0) {
                 if ($sDbUserGroup == $sDbAccessGroup) {
-                    $wpdb->query(
-                        "ALTER TABLE ".$sDbAccessGroup."
-                        ADD read_access TINYTEXT NOT NULL DEFAULT '',
-                        ADD write_access TINYTEXT NOT NULL DEFAULT '',
-                        ADD ip_range MEDIUMTEXT NULL DEFAULT ''"
+                    $wpdb->query( $wpdb->prepare(
+                        "ALTER TABLE %s
+                         ADD read_access TINYTEXT NOT NULL DEFAULT '',
+                         ADD write_access TINYTEXT NOT NULL DEFAULT '',
+                         ADD ip_range MEDIUMTEXT NULL DEFAULT ''",
+                        $sDbAccessGroup
+                    ));
+
+                    $wpdb->update(
+                        $sDbAccessGroup,
+                        array(
+                            'read_access'  => 'group',
+                            'write_access' => 'group'
+                        ),
+                        array(),
+                        array( '%s', '%s')
                     );
 
-                    $wpdb->query(
-                        "UPDATE ".$sDbAccessGroup."
-                        SET read_access = 'group',
-                            write_access = 'group'"
-                    );
-
-                    $sDbIpRange = $wpdb->get_var(
+                    $sDbIpRange = $wpdb->get_var( $wpdb->prepare(
                         "SHOW columns
-                        FROM ".$sDbAccessGroup."
-                        LIKE 'ip_range'"
-                    );
+                         FROM %s
+                         LIKE '%s'",
+                        $sDbAccessGroup,
+                        "ip_range"
+                    ));
 
                     if ($sDbIpRange != 'ip_range') {
-                        $wpdb->query(
-                            "ALTER TABLE ".$sDbAccessGroup."
-                            ADD ip_range MEDIUMTEXT NULL DEFAULT ''"
-                        );
+                        $wpdb->query( $wpdb->prepare(
+                            "ALTER TABLE %s
+                             ADD ip_range MEDIUMTEXT NULL DEFAULT ''",
+                            $sDbAccessGroup
+                        ));
                     }
                 }
 
@@ -365,11 +373,13 @@ class UserAccessManager
 
                 $sCharsetCollate = $this->_getCharset();
 
-                $wpdb->query(
-                    "ALTER TABLE 'wp_uam_accessgroup_to_object'
-                    CHANGE 'object_id' 'object_id' VARCHAR(11)
-                    ".$sCharsetCollate.";"
-                );
+                $wpdb->query( $wpdb->prepare(
+                    "ALTER TABLE '%s'
+                     CHANGE 'object_id' 'object_id' VARCHAR(11)
+                     %s;",
+                    "wp_uam_accessgroup_to_object",
+                    $sCharsetCollate
+                ));
 
                 $aObjectTypes = $this->getAccessHandler()->getObjectTypes();
 
@@ -394,33 +404,34 @@ class UserAccessManager
                         continue;
                     }
 
-                    $sSql = "SELECT ".$sDbIdName." as id, group_id as groupId
-                        FROM ".$sDatabase.$sAddition;
-
-                    $aDbObjects = $wpdb->get_results($sSql);
+                    $aDbObjects = $wpdb->get_results( $wpdb->prepare(
+                        "SELECT %s as id, group_id as groupId
+                         FROM %s%s",
+                        $sDbIdName,
+                        $sDatabase,
+                        $sAddition
+                    ));
 
                     foreach ($aDbObjects as $oDbObject) {
-                        $sSql = "INSERT INTO ".$sDbAccessGroupToObject." (
-                                group_id,
-                                object_id,
-                                object_type
-                            )
-                            VALUES(
-                                '".$oDbObject->groupId."',
-                                '".$oDbObject->id."',
-                                '".$sObjectType."'
-                            )";
-
-                        $wpdb->query($sSql);
+                        $wpdb->insert(
+                            $sDbAccessGroupToObject,
+                            array(
+                                'group_id'    => $oDbObject->groupId,
+                                'object_id'   => $oDbObject->id,
+                                'object_type' => $sObjectType
+                            ),
+                            array( '%d', '%d', '%s')
+                        );
                     }
                 }
 
-                $wpdb->query(
-                    "DROP TABLE ".$sDbAccessGroupToPost.",
-                        ".$sDbAccessGroupToUser.",
-                        ".$sDbAccessGroupToCategory.",
-                        ".$sDbAccessGroupToRole
-                );
+                $wpdb->query( $wpdb->prepare(
+                    "DROP TABLE %s, %s, %s, %s;",
+                    $sDbAccessGroupToPost,
+                    $sDbAccessGroupToUser,
+                    $sDbAccessGroupToCategory,
+                    $sDbAccessGroupToRole
+                ));
             }
 
             update_option('uam_db_version', $this->_sUamDbVersion);
@@ -439,10 +450,11 @@ class UserAccessManager
          */
         global $wpdb;
 
-        $wpdb->query(
-            "DROP TABLE ".DB_ACCESSGROUP.",
-                ".DB_ACCESSGROUP_TO_OBJECT
-        );
+        $wpdb->query( $wpdb->prepare(
+            "DROP TABLE %s, %s;",
+            DB_ACCESSGROUP,
+            DB_ACCESSGROUP_TO_OBJECT
+        ));
 
         delete_option($this->_sAdminOptionsName);
         delete_option('uam_version');
@@ -1187,10 +1199,13 @@ class UserAccessManager
         global $wpdb;
         $oPost = $this->getPost($iPostId);
 
-        $wpdb->query(
-            "DELETE FROM " . DB_ACCESSGROUP_TO_OBJECT . "
-            WHERE object_id = '".$iPostId."'
-                AND object_type = '".$oPost->post_type."'"
+        $wpdb->delete(
+            DB_ACCESSGROUP_TO_OBJECT,
+            array(
+                'object_id'   => $iPostId,
+                'object_type' => $oPost->post_type
+            ),
+            array( '%d', '%s')
         );
     }
 
@@ -1287,10 +1302,13 @@ class UserAccessManager
          */
         global $wpdb;
 
-        $wpdb->query(
-            "DELETE FROM " . DB_ACCESSGROUP_TO_OBJECT . "
-            WHERE object_id = ".$iUserId."
-                AND object_type = 'user'"
+        $wpdb->delete(
+            DB_ACCESSGROUP_TO_OBJECT,
+            array(
+                'object_id'   => $iUserId,
+                'object_type' => 'user'
+            ),
+            array( '%d', '%s')
         );
     }
 
@@ -1308,8 +1326,7 @@ class UserAccessManager
      */
     public function addCategoryColumnsHeader($aDefaults)
     {
-        $aDefaults['uam_access'] = __('Access', 'user-access-manager');
-        return $aDefaults;
+        return $aDefaults['uam_access'] = __('Access', 'user-access-manager');
     }
 
     /**
@@ -1368,10 +1385,13 @@ class UserAccessManager
          */
         global $wpdb;
 
-        $wpdb->query(
-            "DELETE FROM " . DB_ACCESSGROUP_TO_OBJECT . "
-            WHERE object_id = ".$iCategoryId."
-                AND object_type = 'category'"
+        $wpdb->delete(
+            DB_ACCESSGROUP_TO_OBJECT,
+            array(
+                'object_id'   => $iCategoryId,
+                'object_type' => 'category'
+            ),
+            array( '%d', '%s')
         );
     }
 
@@ -1385,7 +1405,7 @@ class UserAccessManager
      *
      * @param string  $sObjectType The name of the pluggable object.
      * @param integer $iObjectId   The pluggable object _iId.
-     * @param array      $aUserGroups The user groups for the object.
+     * @param array   $aUserGroups The user groups for the object.
      *
      * @return null
      */
@@ -1409,10 +1429,13 @@ class UserAccessManager
          */
         global $wpdb;
 
-        $wpdb->query(
-            "DELETE FROM " . DB_ACCESSGROUP_TO_OBJECT . "
-            WHERE object_id = ".$iObjectId."
-                AND object_type = ".$sObjectName
+        $wpdb->delete(
+            DB_ACCESSGROUP_TO_OBJECT,
+            array(
+                'object_id'   => $iObjectId,
+                'object_type' => $sObjectName
+            ),
+            array( '%d', '%s')
         );
     }
 
@@ -1455,7 +1478,6 @@ class UserAccessManager
     {
         return $this->getIncludeContents(UAM_REALPATH.'tpl/objectColumn.php', $iObjectId, $sObjectType);
     }
-
 
     /*
      * Functions for the blog content.
@@ -2285,12 +2307,13 @@ class UserAccessManager
          */
         global $wpdb;
 
-        $oDbPost = $wpdb->get_row(
+        $oDbPost = $wpdb->get_row( $wpdb->prepare(
             "SELECT ID
-            FROM ".$wpdb->prefix."posts
-            WHERE guid = '" . $sNewUrl . "'
-            LIMIT 1"
-        );
+             FROM %sposts
+             WHERE guid = '%s'",
+            $wpdb->prefix,
+            $sNewUrl
+        ));
 
         if ($oDbPost) {
             $this->_aPostUrls[$sUrl] = $oDbPost->ID;
