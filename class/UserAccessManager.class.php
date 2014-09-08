@@ -1101,8 +1101,7 @@ class UserAccessManager
      */
     public function addPostColumnsHeader($aDefaults)
     {
-        $aDefaults['uam_access'] = __('Access', 'user-access-manager');
-        return $aDefaults;
+        return $aDefaults['uam_access'] = __('Access', 'user-access-manager');
     }
 
     /**
@@ -1244,8 +1243,7 @@ class UserAccessManager
      */
     public function addUserColumnsHeader($aDefaults)
     {
-        $aDefaults['uam_access'] = __('uam user groups');
-        return $aDefaults;
+        return $aDefaults['uam_access'] = __('uam user groups');
     }
 
     /**
