@@ -1760,7 +1760,7 @@ class UserAccessManager
         $oTerm->name .= $this->adminOutput('term', $oTerm->term_id);
 
         if ($sTermType == 'post_tag'
-            || $sTermType == 'category' || $sTermType == $oTerm->taxonomy
+            || $sTermType == $oTerm->taxonomy
             && $oUamAccessHandler->checkObjectAccess('category', $oTerm->term_id)
         ) {
             if ($this->atAdminPanel() == false
@@ -1802,7 +1802,7 @@ class UserAccessManager
                 if ($oTerm->count <= 0
                     && $aUamOptions['hide_empty_categories'] == 'true'
                     && ($oTerm->taxonomy == "term"
-                    || $oTerm->taxonomy == "category"|| $oTerm->taxonomy == $sTermType)
+                    || $oTerm->taxonomy == "category" || $oTerm->taxonomy == $sTermType)
                 ) {
                     $oTerm->isEmpty = true;
                 }
