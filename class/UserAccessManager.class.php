@@ -1760,7 +1760,7 @@ class UserAccessManager
         $oTerm->name .= $this->adminOutput('term', $oTerm->term_id);
 
         if ($sTermType == 'post_tag'
-            || $sTermType == 'category'
+            || $sTermType == 'category' || $sTermType == $oTerm->taxonomy
             && $oUamAccessHandler->checkObjectAccess('category', $oTerm->term_id)
         ) {
             if ($this->atAdminPanel() == false
@@ -1802,7 +1802,7 @@ class UserAccessManager
                 if ($oTerm->count <= 0
                     && $aUamOptions['hide_empty_categories'] == 'true'
                     && ($oTerm->taxonomy == "term"
-                    || $oTerm->taxonomy == "category")
+                    || $oTerm->taxonomy == "category"|| $oTerm->taxonomy == $sTermType)
                 ) {
                     $oTerm->isEmpty = true;
                 }
@@ -1811,7 +1811,7 @@ class UserAccessManager
                     $oCurCategory = $oTerm;
 
                     while ($oCurCategory->parent != 0) {
-                        $oCurCategory = get_term($oCurCategory->parent, 'category');
+                        $oCurCategory = get_term($oCurCategory->parent, $sTermType);
 
                         if ($oUamAccessHandler->checkObjectAccess('term', $oCurCategory->term_id)) {
                             $oTerm->parent = $oCurCategory->term_id;
@@ -1831,11 +1831,12 @@ class UserAccessManager
      * The function for the get_terms filter.
      *
      * @param array $aTerms The terms.
+     * @param array $aTaxonomies
      * @param array $aArgs  The given arguments.
      *
      * @return array
      */
-    public function showTerms($aTerms = array(), $aArgs = array())
+    public function showTerms($aTerms = array(), $aTaxonomies = array(),$aArgs = array())
     {
         $aShowTerms = array();
 
@@ -1844,7 +1845,8 @@ class UserAccessManager
                 return $aTerms;
             }
 
-            if ($oTerm->taxonomy == 'category'  || $oTerm->taxonomy == 'post_tag') {
+            // is the term in one of the requested taxonomies
+            if ( in_array( $oTerm->taxonomy, $aTaxonomies)) {
                 $oTerm = $this->_getTerm($oTerm->taxonomy, $oTerm);
             }
 
