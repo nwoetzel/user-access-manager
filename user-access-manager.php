@@ -174,7 +174,7 @@ if (!function_exists("userAccessManagerAP")) {
                 $taxonomies = get_taxonomies( array('public' => true, '_builtin' => false));
                 foreach( $taxonomies as $tax) {
                     add_filter('manage_edit-'.$tax.'_columns', array($oUserAccessManager, 'addCategoryColumnsHeader'));
-                    add_action('manage_'.$tax.'_custom_column', array($oUserAccessManager, 'addCategoryColumn'), 10, 3);
+                    add_filter('manage_'.$tax.'_custom_column', array($oUserAccessManager, 'addCategoryColumn'), 10, 3);
                     add_action($tax.'_add_form_fields', array($oUserAccessManager, 'showCategoryEditForm'));
                     add_action($tax.'_edit_form_fields', array($oUserAccessManager, 'showCategoryEditForm'));
                     add_action('create_'.$tax, array($oUserAccessManager, 'saveCategoryData'));
