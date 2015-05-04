@@ -61,14 +61,11 @@ class UamUserGroup
             global $wpdb;
 
             $this->_iId = $iId;
-
-            $aDbUserGroup = $wpdb->get_row( $wpdb->prepare(
-                    "SELECT *
-                     FROM %s
-                     WHERE ID = %d",
-                    DB_ACCESSGROUP,
-                    $this->getId()
-                ),
+            $aDbUserGroup = $wpdb->get_row(
+                "SELECT *
+                FROM ".DB_ACCESSGROUP."
+                WHERE ID = ".$this->getId()."
+                LIMIT 1",
                 ARRAY_A
             );
 
@@ -536,7 +533,7 @@ class UamUserGroup
         $this->getAccessHandler()->unsetUserGroupsForObject();
         $this->getObjectsFromType($sObjectType);
 
-        $oObject = new stdClass;
+        $oObject = new stdClass();
         $oObject->iId = $iObjectId;
 
         $this->_aObjects[$sObjectType]['real'][$iObjectId] = $oObject;
@@ -643,6 +640,9 @@ class UamUserGroup
             $this->_deleteObjectsFromDb($sObjectType);
         }
 
+        $this->_aAssignedObjects[$sObjectType] = array();
+        $this->getAccessHandler()->getUserAccessManager()->flushCache();
+
         $this->_aObjects[$sObjectType] = array(
             'real' => array(),
             'full' => array(),
@@ -664,9 +664,8 @@ class UamUserGroup
              */
             global $wpdb;
 
-            $wpdb->query(
-                $this->_getSqlQuery($sObjectType, 'delete')
-            );
+            $sQuery = $this->_getSqlQuery($sObjectType, 'delete');
+            $wpdb->query($sQuery);
         }
     }
 
@@ -829,16 +828,17 @@ class UamUserGroup
             $aCapabilities = array();
         }
 
-        $aRole = (count($aCapabilities) > 0) ? array_keys($aCapabilities) : array('norole');
-        $sRole = $aRole[0];
+        $aRoles = (is_array($aCapabilities) && count($aCapabilities) > 0) ? array_keys($aCapabilities) : array('norole');
         $aObjects = $this->getObjectsFromType('role');
 
-        if (isset($aObjects[$sRole])) {
-            $oRoleObject = new stdClass();
-            $oRoleObject->name = $sRole;
+        foreach ($aRoles as $sRole) {
+            if (isset($aObjects[$sRole])) {
+                $oRoleObject = new stdClass();
+                $oRoleObject->name = $sRole;
 
-            $aIsRecursiveMember = array('role' => array());
-            $aIsRecursiveMember['role'][] = $oRoleObject;
+                $aIsRecursiveMember = array('role' => array());
+                $aIsRecursiveMember['role'][] = $oRoleObject;
+            }
         }
 
         return $aIsRecursiveMember;

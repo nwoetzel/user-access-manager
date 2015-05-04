@@ -51,8 +51,8 @@ function insertUpdateGroup($iUserGroupId)
     $oUamUserGroup->unsetObjects('role', true);
 
     if ($aRoles) {
-        foreach ($aRoles as $role) {
-            $oUamUserGroup->addObject('role', $role);
+        foreach ($aRoles as $sRole) {
+            $oUamUserGroup->addObject('role', $sRole);
         }
     }
 
@@ -74,9 +74,8 @@ function getPrintEditGroup($sGroupId = null)
     $oUamUserGroup = $oUserAccessManager->getAccessHandler()->getUserGroups($sGroupId);
     ?>
     <form method="post" action="<?php
-        echo reset(
-            explode("?", $_SERVER["REQUEST_URI"])
-        ) . "?page=" . $_GET['page'];
+        $aUri = explode("?", $_SERVER["REQUEST_URI"]);
+        echo reset($aUri) . "?page=" . $_GET['page'];
     ?>">
     <?php
     wp_nonce_field('uamInsertUpdateGroup', 'uamInsertUpdateGroupNonce');

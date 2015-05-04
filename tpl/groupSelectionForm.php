@@ -38,7 +38,6 @@ foreach ($aUamUserGroups as $oUamUserGroup) {
     }
 
 
-
     ?>
     <li>
         <input type="checkbox" id="<?php echo $sGroupsFormName; ?>-<?php echo $oUamUserGroup->getId(); ?>" <?php echo $sAttributes;?> value="<?php echo $oUamUserGroup->getId(); ?>" name="<?php echo $sGroupsFormName; ?>[]" />

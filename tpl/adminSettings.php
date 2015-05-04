@@ -138,7 +138,8 @@ if ($aUamOptions['show_post_content_before_more'] == "false") {
             <th scope="row"><?php echo TXT_UAM_POST_CONTENT; ?></th>
             <td>
                 <textarea name="uam_post_content" style="width: 80%; height: 100px;" cols="40" rows="10"><?php
-                    echo apply_filters('format_to_edit', $aUamOptions['post_content']);
+                    $sPostContent = stripslashes($aUamOptions['post_content']);
+                    echo apply_filters('format_to_edit', $sPostContent);
                 ?></textarea> <br />
                 <?php echo TXT_UAM_POST_CONTENT_DESC; ?>
             </td>
@@ -259,7 +260,8 @@ if ($aUamOptions['hide_page_title'] == "false") {
             <th><?php echo TXT_UAM_PAGE_CONTENT; ?></th>
             <td>
                 <textarea name="uam_page_content" style="width: 80%; height: 100px;" cols="40" rows="10" ><?php
-                    echo apply_filters('format_to_edit', $aUamOptions['page_content']);
+                    $sPageContent = stripslashes($aUamOptions['page_content']);
+                    echo apply_filters('format_to_edit', $sPageContent);
                 ?></textarea>
                 <br />
                 <?php echo TXT_UAM_PAGE_CONTENT_DESC; ?>
