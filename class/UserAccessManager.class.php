@@ -1827,14 +1827,13 @@ class UserAccessManager
 
     /**
      * The function for the get_terms filter.
-     *
+     * 
      * @param array $aTerms The terms.
-     * @param array $aTaxonomies the taxonomies queried
      * @param array $aArgs  The given arguments.
-     *
+     * 
      * @return array
      */
-    public function showTerms($aTerms = array(), $aTaxonomies = array(), $aArgs = array())
+    public function showTerms($aTerms = array(), $aArgs = array())
     {
         $aShowTerms = array();
 
@@ -1843,7 +1842,7 @@ class UserAccessManager
                 return $aTerms;
             }
 
-            if ($oTerm->taxonomy == 'category' || $oTerm->taxonomy == 'post_tag' || in_array( $oTerm->taxonomy, $aTaxonomies)) {
+            if ($oTerm->taxonomy == 'category' || $oTerm->taxonomy == 'post_tag') {
                 $oTerm = $this->_getTerm($oTerm->taxonomy, $oTerm);
             }
 

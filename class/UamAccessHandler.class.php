@@ -681,11 +681,11 @@ class UamAccessHandler
                     $aRangeEnd = explode(".", $aIpRange[0]);
                 }
 
-                if ($aRangeBegin[0] <= $aCurIp[0]  && $aCurIp[0] <= $aRangeEnd[0]
-                    && $aRangeBegin[1] <= $aCurIp[1] && $aCurIp[1] <= $aRangeEnd[1]
-                    && $aRangeBegin[2] <= $aCurIp[2] && $aCurIp[2] <= $aRangeEnd[2]
-                    && $aRangeBegin[3] <= $aCurIp[3] && $aCurIp[3] <= $aRangeEnd[3]
-                ) {
+                $iCurIp = ($aCurIp[0] << 24) + ($aCurIp[1] << 16) + ($aCurIp[2] << 8) + $aCurIp[3];
+                $iRangeBegin = ($aRangeBegin[0] << 24) + ($aRangeBegin[1] << 16) + ($aRangeBegin[2] << 8) + $aRangeBegin[3];
+                $iRangeEnd = ($aRangeEnd[0] << 24) + ($aRangeEnd[1]  << 16) + ($aRangeEnd[2]   << 8) + $aRangeEnd[3];
+
+                if ($iRangeBegin <= $iCurIp && $iCurIp <= $iRangeEnd) {
                     return true;
                 }
             }

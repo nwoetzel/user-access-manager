@@ -334,7 +334,7 @@ if (isset($oUserAccessManager)) {
         add_filter('comments_array', array($oUserAccessManager, 'showComment'));
         add_filter('the_comments', array($oUserAccessManager, 'showComment'));
         add_filter('get_pages', array($oUserAccessManager, 'showPage'));
-        add_filter('get_terms', array($oUserAccessManager, 'showTerms'), 10, 3);
+        add_filter('get_terms', array($oUserAccessManager, 'showTerms'), 10, 2);
         add_filter('get_next_post_where', array($oUserAccessManager, 'showNextPreviousPost'));
         add_filter('get_previous_post_where', array($oUserAccessManager, 'showNextPreviousPost'));
         add_filter('post_link', array($oUserAccessManager, 'cachePostLinks'), 10, 2);
