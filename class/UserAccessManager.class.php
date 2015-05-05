@@ -1099,7 +1099,7 @@ class UserAccessManager
      */
     public function addPostColumnsHeader($aDefaults)
     {
-        return $aDefaults['uam_access'] = __('Access', 'user-access-manager');
+        return array_merge( $aDefaults, array( 'uam_access' => __('Access', 'user-access-manager')));
     }
 
     /**
@@ -1241,7 +1241,7 @@ class UserAccessManager
      */
     public function addUserColumnsHeader($aDefaults)
     {
-        return $aDefaults['uam_access'] = __('uam user groups');
+        return array_merge( $aDefaults, array( 'uam_access' => __('uam user groups')));
     }
 
     /**
@@ -1322,7 +1322,7 @@ class UserAccessManager
      */
     public function addCategoryColumnsHeader($aDefaults)
     {
-        return $aDefaults['uam_access'] = __('Access', 'user-access-manager');
+        return array_merge( $aDefaults, array('uam_access' => __('Access', 'user-access-manager')));
     }
 
     /**
@@ -1827,10 +1827,10 @@ class UserAccessManager
 
     /**
      * The function for the get_terms filter.
-     * 
+     *
      * @param array $aTerms The terms.
      * @param array $aArgs  The given arguments.
-     * 
+     *
      * @return array
      */
     public function showTerms($aTerms = array(), $aArgs = array())
