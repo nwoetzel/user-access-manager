@@ -129,28 +129,8 @@ if (!function_exists("userAccessManagerAP")) {
         if ($oUamAccessHandler->checkUserAccess()
             || $aUamOptions['authors_can_add_posts_to_groups'] == 'true'
         ) {
-            //Admin actions and filters
-            if (function_exists('add_action') && function_exists('add_filter')) {
-                // add the user access columns to posts, pages and users
-                // user
-                add_filter('manage_users_columns', array($oUserAccessManager, 'addUserColumnsHeader'), 10);
-                add_filter('manage_users_custom_column', array($oUserAccessManager, 'addUserColumn'), 10, 3);
-
-                // posts
-                add_action('manage_posts_custom_column', array($oUserAccessManager, 'addPostColumn'), 10, 2);
-                add_filter('manage_posts_columns', array($oUserAccessManager, 'addPostColumnsHeader'));
-
-                // pages
-                add_action('manage_pages_custom_column', array($oUserAccessManager, 'addPostColumn'), 10, 2);
-                add_filter('manage_pages_columns', array($oUserAccessManager, 'addPostColumnsHeader'));
-
-                // media
-                add_action('manage_media_custom_column', array($oUserAccessManager, 'addPostColumn'), 10, 2);
-                if ($aUamOptions['lock_file'] == 'true') {
-                    add_action('media_meta', array($oUserAccessManager, 'showMediaFile'), 10, 2);
-                    add_filter('manage_media_columns', array($oUserAccessManager, 'addPostColumnsHeader'));
-                }
-
+            //Admin actions
+            if (function_exists('add_action')) {
                 add_action('admin_print_styles', array($oUserAccessManager, 'addStyles'));
                 add_action('wp_print_scripts', array($oUserAccessManager, 'addScripts'));
 
