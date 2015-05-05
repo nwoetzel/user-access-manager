@@ -861,10 +861,10 @@ class UamUserGroup
              */
             global $wpdb;
 
-            $aDbUsers = $wpdb->get_results( $wpdb->prepare(
+            $aDbUsers = $wpdb->get_results(
                 "SELECT ID, user_nicename
-                FROM %s", $wpdb->users
-            ));
+                FROM ".$wpdb->users
+            );
 
             $aFullUsers = array();
 
@@ -1010,16 +1010,13 @@ class UamUserGroup
                  */
                 global $wpdb;
 
-                $aDbObjects = $wpdb->get_results( $wpdb->prepare(
+                $aDbObjects = $wpdb->get_results(
                     "SELECT tr.object_id AS objectId, tt.term_id AS categoryId
-                    FROM %s AS tr,
-                    %s AS tt
-                    WHERE tr.term_taxonomy_id = tt.term_taxonomy_id
-                    AND tt.taxonomy = '%s'",
-                    $wpdb->term_relationships,
-                    $wpdb->term_taxonomy,
-                    "category"
-                ));
+                    FROM ".$wpdb->term_relationships." AS tr,
+                    ".$wpdb->term_taxonomy." AS tt
+                WHERE tr.term_taxonomy_id = tt.term_taxonomy_id
+                    AND tt.taxonomy = 'category'"
+                );
 
                 foreach ($aDbObjects as $oDbObject) {
                     if (!isset($this->_aObjectsInCategory[$oDbObject->objectId])) {
