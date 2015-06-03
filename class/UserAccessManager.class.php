@@ -643,10 +643,6 @@ class UserAccessManager
     public function createHtpasswd($blCreateNew = false, $sDir = null)
     {
         $oCurrentUser = $this->getCurrentUser();
-        if (!function_exists('get_userdata')) {
-            include_once ABSPATH.'wp-includes/pluggable.php';
-        }
-
         $aUamOptions = $this->getAdminOptions();
 
         // get url
@@ -659,16 +655,14 @@ class UserAccessManager
         }
 
         if ($sDir !== null) {
-            $oUserData = get_userdata($oCurrentUser->ID);
-
             if (!file_exists($sDir.".htpasswd") || $blCreateNew) {
                 if ($aUamOptions['file_pass_type'] == 'random') {
                     $sPassword = md5($this->getRandomPassword());
                 } else {
-                    $sPassword = $oUserData->user_pass;
+                    $sPassword = $oCurrentUser->user_pass;
                 }
 
-                $sUser = $oUserData->user_login;
+                $sUser = $oCurrentUser->user_login;
 
                 // make .htpasswd
                 $sHtpasswdTxt = "$sUser:" . $sPassword . "\n";
@@ -907,41 +901,49 @@ class UserAccessManager
      */
 
     /**
-     * The function for the wp_print_styles action.
+     * The function for the [wp|admin]_enqueue_scripts action.
      *
      * @return null
      */
-    public function addStyles()
+    public function addStyles($hook = '')
     {
-        wp_enqueue_style(
-            'UserAccessManagerAdmin',
-            UAM_URLPATH . "css/uamAdmin.css",
-            array() ,
-            '1.0',
-            'screen'
-        );
+        // admin styles
+        if (!empty($hook)) {
+            wp_enqueue_style(
+                'UserAccessManagerAdmin',
+                UAM_URLPATH . "css/uamAdmin.css",
+                array() ,
+                '1.0',
+                'screen'
+            );
 
-        wp_enqueue_style(
-            'UserAccessManagerLoginForm',
-            UAM_URLPATH . "css/uamLoginForm.css",
-            array() ,
-            '1.0',
-            'screen'
-        );
+        // front-end styles
+        } else {
+            // just register and enqueue later only if needed
+            wp_register_style(
+                'UserAccessManagerLoginForm',
+                UAM_URLPATH . "css/uamLoginForm.css",
+                array() ,
+                '1.0',
+                'screen'
+            );
+        }
     }
 
     /**
-     * The function for the wp_print_scripts action.
+     * The function for the admin_enqueue_scripts action.
      *
      * @return null
      */
-    public function addScripts()
+    public function addScripts($hook)
     {
-        wp_enqueue_script(
-            'UserAccessManagerFunctions',
-            UAM_URLPATH . 'js/functions.js',
-            array('jquery')
-        );
+        if ($hook == 'uam_page_uam_settings') {
+            wp_enqueue_script(
+                'UserAccessManagerFunctions',
+                UAM_URLPATH . 'js/functions.js',
+                array('jquery')
+            );
+        }
     }
 
     /**
@@ -1241,7 +1243,7 @@ class UserAccessManager
      */
     public function addUserColumnsHeader($aDefaults)
     {
-        return array_merge( $aDefaults, array( 'uam_access' => __('uam user groups')));
+        return array_merge( $aDefaults, array( 'uam_access' => __('uam user groups', 'user-access-manager')));
     }
 
     /**
@@ -1326,9 +1328,9 @@ class UserAccessManager
     }
 
     /**
-     * The function for the manage_categories_custom_column action.
+     * The function for the manage_category_custom_column filter.
      *
-     * @param string  $sOut        current output for that column
+     * @param string  $sOut        Output for the column.
      * @param string  $sColumnName The column name.
      * @param integer $iId         The _iId.
      *
@@ -1569,7 +1571,7 @@ class UserAccessManager
      *
      * @return array
      */
-    public function showPost($aPosts = array())
+    public function showPost($aPosts, $oWpQuery)
     {
         $aShowPosts = array();
         $aUamOptions = $this->getAdminOptions();
@@ -1755,27 +1757,26 @@ class UserAccessManager
 
         $oTerm->isEmpty = false;
 
-        $oTerm->name .= $this->adminOutput('term', $oTerm->term_id);
-
         if ($sTermType == 'post_tag'
             || ( $sTermType == 'category' || $sTermType == $oTerm->taxonomy)
             && $oUamAccessHandler->checkObjectAccess('category', $oTerm->term_id)
         ) {
+            $oTerm->name .= $this->adminOutput('category', $oTerm->term_id);
+
             if ($this->atAdminPanel() == false
                 && ($aUamOptions['hide_post'] == 'true'
                 || $aUamOptions['hide_page'] == 'true')
             ) {
-                $iTermRequest = $oTerm->term_id;
-                $sTermRequestType = $sTermType;
-
-                if ($sTermType == 'post_tag') {
-                    $iTermRequest = $oTerm->slug;
-                    $sTermRequestType = 'tag';
-                }
-
                 $aArgs = array(
                     'numberposts' => - 1,
-                    $sTermRequestType => $iTermRequest
+                    'tax_query' => array(
+                      array(
+                        'taxonomy' => $sTermType,
+                        'terms' => array($oTerm->term_id),
+                        'field' => 'term_id',
+                        'include_children' => true
+                      )
+                    )
                 );
 
                 $aTermPosts = get_posts($aArgs);
@@ -1783,7 +1784,9 @@ class UserAccessManager
 
                 if (isset($aTermPosts)) {
                     foreach ($aTermPosts as $oPost) {
-                        if ($aUamOptions['hide_'.$oPost->post_type] == 'true'
+                        $sPostType = ( !in_array($oPost->post_type, array('post', 'page')) )? 'post' : $oPost->post_type;
+                        if ($oUamAccessHandler->isPostableType($oPost->post_type)
+                            && $aUamOptions['hide_'.$sPostType] == 'true'
                             && !$oUamAccessHandler->checkObjectAccess($oPost->post_type, $oPost->ID)
                         ) {
                             $oTerm->count--;
@@ -1801,6 +1804,7 @@ class UserAccessManager
                     && $aUamOptions['hide_empty_categories'] == 'true'
                     && ($oTerm->taxonomy == "term"
                     || $oTerm->taxonomy == "category" || $oTerm->taxonomy == $sTermType)
+//                     && $oTerm->taxonomy == "category"
                 ) {
                     $oTerm->isEmpty = true;
                 }
@@ -1812,6 +1816,9 @@ class UserAccessManager
                         $oCurCategory = get_term($oCurCategory->parent, $sTermType);
 
                         if ($oUamAccessHandler->checkObjectAccess('term', $oCurCategory->term_id)) {
+//                         $oCurCategory = get_term($oCurCategory->parent, 'category');
+
+//                         if ($oUamAccessHandler->checkObjectAccess('category', $oCurCategory->term_id)) {
                             $oTerm->parent = $oCurCategory->term_id;
                             break;
                         }
@@ -1829,22 +1836,27 @@ class UserAccessManager
      * The function for the get_terms filter.
      *
      * @param array $aTerms The terms.
+     * @param array $aTaxonomies The taxonomies queried.
      * @param array $aArgs  The given arguments.
      *
      * @return array
      */
-    public function showTerms($aTerms = array(), $aArgs = array())
+    public function showTerms($aTerms, $aTaxonomies, $aArgs)
     {
+        $oUamAccessHandler = $this->getAccessHandler();
+
+        if (!in_array(reset($aTaxonomies), array('category', 'post_tag'))
+            || empty($aTerms)
+            || 'all' != $aArgs['fields']
+            || ($this->atAdminPanel() && $oUamAccessHandler->checkUserAccess())
+        ) {
+            return $aTerms;
+        }
+
         $aShowTerms = array();
 
         foreach ($aTerms as $oTerm) {
-            if (!is_object($oTerm)) {
-                return $aTerms;
-            }
-
-            if ($oTerm->taxonomy == 'category' || $oTerm->taxonomy == 'post_tag') {
-                $oTerm = $this->_getTerm($oTerm->taxonomy, $oTerm);
-            }
+            $oTerm = $this->_getTerm($oTerm->taxonomy, $oTerm);
 
             if ($oTerm !== null && (!isset($oTerm->isEmpty) || !$oTerm->isEmpty)) {
                 $aShowTerms[$oTerm->term_id] = $oTerm;
@@ -1903,9 +1915,7 @@ class UserAccessManager
             if ($aUamOptions['blog_admin_hint'] == 'true') {
                 $oCurrentUser = $this->getCurrentUser();
 
-                $oUserData = get_userdata($oCurrentUser->ID);
-
-                if (!isset($oUserData->user_level)) {
+                if ( !$oCurrentUser || !$oCurrentUser->exists() ) {
                     return $sOutput;
                 }
 
@@ -1956,6 +1966,7 @@ class UserAccessManager
     public function getLoginBarHtml()
     {
         if (!is_user_logged_in()) {
+            wp_enqueue_style('UserAccessManagerLoginForm');
             return $this->getIncludeContents(UAM_REALPATH.'tpl/loginBar.php');
         }
 
