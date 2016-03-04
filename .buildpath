@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
-    <buildpathentry kind="src" path=""/>
-    <buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
+	<buildpathentry kind="src" path="vendor/ramsey/array_column/src"/>
+	<buildpathentry excluding="cli/" kind="src" path="vendor/wp-cli/php-cli-tools/lib"/>
+	<buildpathentry kind="src" path="vendor/symfony/event-dispatcher"/>
+	<buildpathentry kind="src" path="vendor/symfony/finder"/>
+	<buildpathentry kind="src" path="vendor/symfony/console"/>
+	<buildpathentry kind="src" path="vendor/mustache/mustache/src"/>
+	<buildpathentry excluding="semver/" kind="src" path="vendor/composer"/>
+	<buildpathentry kind="src" path="vendor/symfony/filesystem"/>
+	<buildpathentry kind="src" path="vendor/rmccue/requests/library"/>
+	<buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
+	<buildpathentry kind="src" path="vendor/composer/semver/src"/>
+	<buildpathentry kind="src" path="vendor/wp-cli/wp-cli/php/export"/>
+	<buildpathentry kind="src" path="vendor/symfony/translation"/>
+	<buildpathentry kind="src" path="vendor/nb/oxymel"/>
+	<buildpathentry kind="src" path="vendor/symfony/dependency-injection"/>
+	<buildpathentry kind="src" path="vendor/mustangostang/spyc"/>
+	<buildpathentry kind="src" path="vendor/symfony/config"/>
+	<buildpathentry kind="src" path="vendor/symfony/yaml"/>
+	<buildpathentry kind="src" path="vendor/wp-cli/php-cli-tools/lib/cli"/>
+	<buildpathentry excluding="export/" kind="src" path="vendor/wp-cli/wp-cli/php"/>
 </buildpath>

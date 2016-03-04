@@ -34,7 +34,12 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
             'ip_range',
     );
 
-    /**
+    private $userAccessManager;
+    public function __construct() {
+        $this->userAccessManager = new UserAccessManager();
+    }
+
+        /**
      * list groups
      *
      * ## OPTIONS
@@ -49,8 +54,7 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
      * @subcommand list
      */
     public function list_( $_, $assoc_args) {
-        global $oUserAccessManager;
-        $aUamUserGroups = $oUserAccessManager->getAccessHandler()->getUserGroups();
+        $aUamUserGroups = $this->userAccessManager->getAccessHandler()->getUserGroups();
 
         if (!isset($aUamUserGroups)) {
             WP_CLI:error( "no groups defined yet!");
@@ -90,17 +94,15 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
      * @subcommand del
      */
     public function del( $_, $assoc_args) {
-        global $oUserAccessManager;
-
         if( count( $_) < 1) {
             WP_CLI::error("Expected: wp uam groups del <id> ..");
         }
 
         foreach ($_ as $delId) {
-            if ($oUserAccessManager->getAccessHandler()->getUserGroups($delId) == null) {
+            if ($this->userAccessManager->getAccessHandler()->getUserGroups($delId) == null) {
                 WP_CLI::error( "no group with this id: " . $delId);
             }
-            $oUserAccessManager->getAccessHandler()->deleteUserGroup($delId);
+            $this->userAccessManager->getAccessHandler()->deleteUserGroup($delId);
         }
         WP_CLI::success( "successfully deleted groups: " . implode( " ", $_));
     }
@@ -133,13 +135,11 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
      *
      */
     public function add( $_, $assoc_args) {
-        global $oUserAccessManager;
-
         $porcelain = isset( $assoc_args[ "porcelain"]);
 
         $groupname      = $_[0];
 
-        $aUamUserGroups = $oUserAccessManager->getAccessHandler()->getUserGroups();
+        $aUamUserGroups = $this->userAccessManager->getAccessHandler()->getUserGroups();
 
         foreach ($aUamUserGroups as $oUamUserGroup) {
             if( $oUamUserGroup->getGroupName() == $groupname) {
@@ -152,7 +152,7 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
         $write_access   = $assoc_args[ 'write_access'];
         $ip_range       = $assoc_args[ 'ip_range'];
 
-        $oUamUserGroup = new UamUserGroup($oUserAccessManager->getAccessHandler(), null);
+        $oUamUserGroup = new UamUserGroup($this->userAccessManager->getAccessHandler(), null);
 
         if( !in_array( $read_access, self::$aAllowedAccessValues)) {
             if( !$porcelain) {
@@ -187,7 +187,7 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
 
         $oUamUserGroup->save();
 
-        $oUserAccessManager->getAccessHandler()->addUserGroup($oUamUserGroup);
+        $this->userAccessManager->getAccessHandler()->addUserGroup($oUamUserGroup);
 
         if( $porcelain) {
             WP_CLI::line( $oUamUserGroup->getId());
@@ -206,6 +206,11 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
  * @maintainer nwoetzel
  */
 class Objects_Command extends WP_CLI_Command {
+
+    private $userAccessManager;
+    public function __construct() {
+        $this->userAccessManager = new UserAccessManager();
+    }
 
     /**
      * update groups for an object
@@ -248,8 +253,7 @@ class Objects_Command extends WP_CLI_Command {
                 WP_CLI::error( "operation is not valid: " . $sOperation);
         }
 
-        global $oUserAccessManager;
-        $oUamAccessHandler = $oUserAccessManager->getAccessHandler();
+        $oUamAccessHandler = $this->userAccessManager->getAccessHandler();
 
         // groups passes
         $groups = array_unique( explode( ",", $assoc_args[ 'groups']));
