@@ -1845,8 +1845,8 @@ class UserAccessManager
     {
         $oUamAccessHandler = $this->getAccessHandler();
 
-        if (!in_array(reset($aTaxonomies), array('category', 'post_tag'))
-            || empty($aTerms)
+        if (/*!in_array(reset($aTaxonomies), array('category', 'post_tag'))
+            ||*/ empty($aTerms)
             || 'all' != $aArgs['fields']
             || ($this->atAdminPanel() && $oUamAccessHandler->checkUserAccess())
         ) {
@@ -2339,7 +2339,7 @@ class UserAccessManager
         );
 
         $oDbPost = $wpdb->get_row($sSql);
-        
+
         if ($oDbPost) {
             $this->_aPostUrls[$sUrl] = $oDbPost->ID;
         }
