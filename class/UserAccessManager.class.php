@@ -1844,9 +1844,9 @@ class UserAccessManager
     public function showTerms($aTerms, $aTaxonomies, $aArgs)
     {
         $oUamAccessHandler = $this->getAccessHandler();
-
-        // TODO: this should also include all visible taxonomies (user configurable categories, like event-categories in the event-manager plugin)
-        if ( !in_array(reset($aTaxonomies), array('category', 'post_tag'))
+        $aManagedTaxonomies = array_merge( get_taxonomies(array('public' => true, '_builtin' => false)), array('category', 'post_tag'));
+        
+        if ( !in_array(reset($aTaxonomies), $aManagedTaxonomies)
             || empty($aTerms)
             || 'all' != $aArgs['fields']
             || ($this->atAdminPanel() && $oUamAccessHandler->checkUserAccess())
