@@ -6,11 +6,11 @@
  * Version: 1.2.6.7
  * Author: Alexander Schneider
  * Description: Manage the access to your posts, pages, categories and files.
- *
+ * 
  * user-access-manager.php
  *
  * PHP versions 5
- *
+ * 
  * @category  UserAccessManager
  * @package   UserAccessManager
  * @author    Alexander Schneider <alexanderschneider85@gmail.com>
@@ -52,7 +52,7 @@ if (version_compare($sPhpVersion, "5.0") === -1) {
             '</strong></p></div>\';'
         )
     );
-
+    
     $blStop = true;
 }
 
@@ -69,7 +69,7 @@ if (version_compare($wp_version, "3.0") === -1) {
             '</strong></p></div>\';'
         )
     );
-
+    
     $blStop = true;
 }
 
@@ -92,7 +92,7 @@ if (class_exists("UserAccessManager")) {
 if (!function_exists("userAccessManagerAP")) {
     /**
      * Creates the filters and actions for the admin panel
-     *
+     * 
      * @return null;
      */
     function userAccessManagerAP()
@@ -194,11 +194,12 @@ if (!function_exists("userAccessManagerAP")) {
             add_action('delete_category', array($oUserAccessManager, 'removeCategoryData'), 10, 2);
 
             // taxonomies
+
             foreach ($aTaxonomies as $sTaxonomy) {
                 add_action('delete_'.$sTaxonomy, array($oUserAccessManager, 'removeCategoryData'));
             }
         }
-
+        
         $oUserAccessManager->noRightsToEditContent();
     }
 }
@@ -206,21 +207,21 @@ if (!function_exists("userAccessManagerAP")) {
 if (!function_exists("userAccessManagerAPMenu")) {
     /**
      * Creates the menu at the admin panel
-     *
+     * 
      * @return null;
      */
     function userAccessManagerAPMenu()
     {
         global $oUserAccessManager;
         //$oCurrentUser = $oUserAccessManager->getCurrentUser();
-
+        
         if (!isset($oUserAccessManager)) {
             return;
         }
-
+        
         $aUamOptions = $oUserAccessManager->getAdminOptions();
-
-        if (ini_get('safe_mode')
+        
+        if (ini_get('safe_mode') 
             && $aUamOptions['download_type'] == 'fopen'
         ) {
             add_action(
@@ -233,47 +234,47 @@ if (!function_exists("userAccessManagerAPMenu")) {
                 )
             );
         }
-
+        
         $oUamAccessHandler = $oUserAccessManager->getAccessHandler();
-
+        
         if ($oUamAccessHandler->checkUserAccess()) {
             //TODO
             /**
              * --- BOF ---
-             * Not the best way to handle full user access capabilities seems
+             * Not the best way to handle full user access capabilities seems 
              * to be the right way, but it is way difficult.
              */
-
+            
             //Admin main menu
             if (function_exists('add_menu_page')) {
                 add_menu_page('User Access Manager', 'UAM', 'manage_options', 'uam_usergroup', array($oUserAccessManager, 'printAdminPage'), 'div');
             }
-
+            
             //Admin sub menus
             if (function_exists('add_submenu_page')) {
                 add_submenu_page('uam_usergroup', TXT_UAM_MANAGE_GROUP, TXT_UAM_MANAGE_GROUP, 'read', 'uam_usergroup', array($oUserAccessManager, 'printAdminPage'));
                 add_submenu_page('uam_usergroup', TXT_UAM_SETTINGS, TXT_UAM_SETTINGS, 'read', 'uam_settings', array($oUserAccessManager, 'printAdminPage'));
                 add_submenu_page('uam_usergroup', TXT_UAM_SETUP, TXT_UAM_SETUP, 'read', 'uam_setup', array($oUserAccessManager, 'printAdminPage'));
                 add_submenu_page('uam_usergroup', TXT_UAM_ABOUT, TXT_UAM_ABOUT, 'read', 'uam_about', array($oUserAccessManager, 'printAdminPage'));
-
+                
                 do_action('uam_add_submenu');
             }
             /**
              * --- EOF ---
              */
         }
-
+        
         if ($oUamAccessHandler->checkUserAccess()
             || $aUamOptions['authors_can_add_posts_to_groups'] == 'true'
         ) {
             //Admin meta boxes
             if (function_exists('add_meta_box')) {
                 $aPostableTypes = $oUamAccessHandler->getPostableTypes();
-
+                
                 foreach ($aPostableTypes as $sPostableType) {
                     add_meta_box('uma_post_access', __('Access', 'user-access-manager'), array($oUserAccessManager, 'editPostContent'), $sPostableType, 'side');
                 }
-
+                
                 /*add_meta_box('uma_post_access', 'Access', array($oUserAccessManager, 'editPostContent'), 'post', 'side');
                 add_meta_box('uma_post_access', 'Access', array($oUserAccessManager, 'editPostContent'), 'page', 'side');*/
             }
@@ -293,7 +294,7 @@ if (isset($oUserAccessManager)) {
     if (function_exists('register_activation_hook')) {
         register_activation_hook(__FILE__, array($oUserAccessManager, 'install'));
     }
-
+    
     //uninstall
     if (function_exists('register_uninstall_hook')) {
         register_uninstall_hook(__FILE__, 'userAccessManagerUninstall');
@@ -301,15 +302,15 @@ if (isset($oUserAccessManager)) {
         //Fallback
         register_deactivation_hook(__FILE__, array($oUserAccessManager, 'uninstall'));
     }
-
+    
     //deactivation
     if (function_exists('register_deactivation_hook')) {
         register_deactivation_hook(__FILE__, array($oUserAccessManager, 'deactivate'));
     }
-
+    
     //Redirect
     $aUamOptions = $oUserAccessManager->getAdminOptions();
-
+    
     if ($aUamOptions['redirect'] != 'false' || isset($_GET['uamgetfile'])) {
         add_filter('wp_headers', array($oUserAccessManager, 'redirect'), 10, 2);
     }

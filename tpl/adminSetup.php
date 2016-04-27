@@ -1,11 +1,11 @@
 <?php
 /**
  * adminSetup.php
- *
+ * 
  * Shows the setup page at the admin panel.
- *
+ * 
  * PHP versions 5
- *
+ * 
  * @category  UserAccessManager
  * @package   UserAccessManager
  * @author    Alexander Schneider <alexanderschneider85@googlemail.com>
@@ -23,27 +23,27 @@ if (isset($_POST['action'])) {
 }
 
 if ($sPostAction == 'update_db') {
-    if (empty($_POST)
+    if (empty($_POST) 
         || !wp_verify_nonce($_POST['uamSetupUpdateNonce'], 'uamSetupUpdate')
     ) {
          wp_die(TXT_UAM_NONCE_FAILURE);
     }
-
+    
     if (isset($_POST['uam_update_db'])) {
         $sUpdate = $_POST['uam_update_db'];
     } else {
         $sUpdate = null;
     }
-
+    
     if ($sUpdate == 'true'
         || $sUpdate == 'network'
     ) {
         $mNetwork = false;
-
+        
         if ($sUpdate == 'network') {
             $mNetwork = true;
         }
-
+        
         $oUserAccessManager->update($mNetwork);
         ?>
         <div class="updated">
@@ -54,18 +54,18 @@ if ($sPostAction == 'update_db') {
 }
 
 if ($sPostAction == 'reset_uam') {
-    if (empty($_POST)
+    if (empty($_POST) 
         || !wp_verify_nonce($_POST['uamSetupResetNonce'], 'uamSetupReset')
     ) {
          wp_die(TXT_UAM_NONCE_FAILURE);
     }
-
+    
     if (isset($_POST['uam_reset'])) {
         $sReset = $_POST['uam_reset'];
     } else {
         $sReset = null;
     }
-
+    
     if ($sReset == 'true') {
         $oUserAccessManager = new UserAccessManager();
         $oUserAccessManager->uninstall();
@@ -79,7 +79,7 @@ if ($sPostAction == 'reset_uam') {
 }
 ?>
 
-<div class="wrap">
+<div class="wrap"> 
     <h2><?php echo TXT_UAM_SETUP; ?></h2>
     <table class="form-table">
         <tbody>
