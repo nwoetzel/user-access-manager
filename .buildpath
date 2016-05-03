@@ -18,6 +18,8 @@
 	<buildpathentry kind="src" path="vendor/mustangostang/spyc"/>
 	<buildpathentry kind="src" path="vendor/symfony/config"/>
 	<buildpathentry kind="src" path="vendor/symfony/yaml"/>
+	<buildpathentry kind="src" path="wp"/>
 	<buildpathentry kind="src" path="vendor/wp-cli/php-cli-tools/lib/cli"/>
+	<buildpathentry kind="src" path="vendor/johnpbloch/wordpress-core-installer/src"/>
 	<buildpathentry excluding="export/" kind="src" path="vendor/wp-cli/wp-cli/php"/>
 </buildpath>

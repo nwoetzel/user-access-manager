@@ -1,8 +1,12 @@
 {
-    "name": "nwoetzel/user-access-manager",
-    "description": "With the \"User Access Manager\"-plugin you can manage the access to your posts, pages and files in wordpress.",
-    "require-dev": {
-        "wp-cli/wp-cli": "^0.22.0"
-    },
-    "require": {}
+	"name" : "nwoetzel/user-access-manager",
+	"description" : "With the \"User Access Manager\"-plugin you can manage the access to your posts, pages and files in wordpress.",
+	"require-dev" : {
+		"wp-cli/wp-cli" : "^0.22.0",
+		"johnpbloch/wordpress" : "4.3.3"
+	},
+	"extra" : {
+		"wordpress-install-dir" : "wp"
+	},
+	"minimum-stability" : "stable"
 }
