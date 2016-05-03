@@ -79,9 +79,8 @@ class UamAccessHandler
      */
     public function registered_post_type($post_type, $oArgs)
     {
-        if ($oArgs->publicly_queryable) {
+        if ($oArgs->publicly_queryable && !in_array($oArgs->name, $this->_aPostableTypes) {
             $this->_aPostableTypes[] = $oArgs->name;
-            $this->_aPostableTypes = array_unique($this->_aPostableTypes);
             $this->_aPostableTypesMap = array_flip($this->_aPostableTypes);
             $this->_aObjectTypes = array_unique( array_merge($this->_aObjectTypes, $this->_aPostableTypes) );
             $this->_aAllObjectTypes = null;

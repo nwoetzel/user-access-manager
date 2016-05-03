@@ -134,9 +134,9 @@ if (!function_exists("userAccessManagerAP")) {
 
                 add_action('manage_posts_custom_column', array($oUserAccessManager, 'addPostColumn'), 10, 2);
                 add_action('manage_pages_custom_column', array($oUserAccessManager, 'addPostColumn'), 10, 2);
+                add_action('manage_media_custom_column', array($oUserAccessManager, 'addPostColumn'), 10, 2);
                 add_action('save_post', array($oUserAccessManager, 'savePostData'));
 
-                add_action('manage_media_custom_column', array($oUserAccessManager, 'addPostColumn'), 10, 2);
 
                 //Actions are only called when the attachment content is modified so we can't use it.
                 //add_action('add_attachment', array($oUserAccessManager, 'savePostData'));
@@ -168,9 +168,11 @@ if (!function_exists("userAccessManagerAP")) {
                 //The filter we use instead of add|edit_attachment action, reason see top
                 add_filter('attachment_fields_to_save', array($oUserAccessManager, 'saveAttachmentData'));
 
+                // add table column for Access
                 add_filter('manage_posts_columns', array($oUserAccessManager, 'addPostColumnsHeader'));
                 add_filter('manage_pages_columns', array($oUserAccessManager, 'addPostColumnsHeader'));
-
+                add_filter('manage_media_columns', array($oUserAccessManager, 'addPostColumnsHeader'));
+                
                 add_filter('manage_users_columns', array($oUserAccessManager, 'addUserColumnsHeader'), 10);
                 add_filter('manage_users_custom_column', array($oUserAccessManager, 'addUserColumn'), 10, 3);
 
@@ -180,7 +182,6 @@ if (!function_exists("userAccessManagerAP")) {
 
             if ($aUamOptions['lock_file'] == 'true') {
                 add_action('media_meta', array($oUserAccessManager, 'showMediaFile'), 10, 2);
-                add_filter('manage_media_columns', array($oUserAccessManager, 'addPostColumnsHeader'));
             }
         }
 
@@ -194,7 +195,6 @@ if (!function_exists("userAccessManagerAP")) {
             add_action('delete_category', array($oUserAccessManager, 'removeCategoryData'), 10, 2);
 
             // taxonomies
-
             foreach ($aTaxonomies as $sTaxonomy) {
                 add_action('delete_'.$sTaxonomy, array($oUserAccessManager, 'removeCategoryData'));
             }

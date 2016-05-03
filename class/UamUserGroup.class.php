@@ -813,9 +813,9 @@ class UamUserGroup
     
     /**
      * Returns a single user.
-     *
+     * 
      * @param integer $iObjectId The object _iId.
-     *
+     * 
      * @return object
      */
     protected function _getFullUser($iObjectId)
