@@ -816,7 +816,7 @@ class UamUserGroup
      * 
      * @param integer $iObjectId The object _iId.
      * 
-     * @return object
+     * @return array
      */
     protected function _getFullUser($iObjectId)
     {
