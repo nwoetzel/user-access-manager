@@ -999,6 +999,7 @@ class UamUserGroup
     protected function _getFullPost($sPostType, $iObjectId)
     {
         $aIsRecursiveMember = array();
+        $oUserAccessManager = $this->getAccessHandler()->getUserAccessManager();
         $oPost = $this->getAccessHandler()->getUserAccessManager()->getPost($iObjectId);
         $oConfig = $this->getAccessHandler()->getUserAccessManager()->getConfig();
         $aTerms = $this->getObjectsFromType(UserAccessManager::TERM_OBJECT_TYPE, self::OBJECTS_FULL);
