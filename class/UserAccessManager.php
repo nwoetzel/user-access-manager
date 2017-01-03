@@ -1123,10 +1123,16 @@ class UserAccessManager
     {
         $oDatabase = $this->getDatabase();
 
-        $oDatabase->query(
-            "DELETE FROM " . DB_ACCESSGROUP_TO_OBJECT . " 
-            WHERE object_id = {$iId}
-                AND object_type = '{$sObjectType}'"
+        $oDatabase->delete(
+            DB_ACCESSGROUP_TO_OBJECT,
+            array(
+                'object_id' => $iId ,
+                'object_type' => $sObjectType,
+            ),
+            array(
+                '%d',
+                '%s',
+            )
         );
     }
 
@@ -1232,10 +1238,16 @@ class UserAccessManager
         $oDatabase = $this->getDatabase();
         $oPost = $this->getPost($iPostId);
         
-        $oDatabase->query(
-            "DELETE FROM " . DB_ACCESSGROUP_TO_OBJECT . " 
-            WHERE object_id = '".$iPostId."'
-                AND object_type = '".$oPost->post_type."'"
+        $oDatabase->delete(
+            DB_ACCESSGROUP_TO_OBJECT,
+            array(
+                'object_id' => $iPostId,
+                'object_type' => $oPost->post_type,
+            ),
+            array(
+                '%d',
+                '%s',
+            )
         );
     }
     
