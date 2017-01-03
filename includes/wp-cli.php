@@ -1,45 +1,70 @@
 <?php
 /**
+<<<<<<< HEAD
  * This file is part of the user-access-manager, a plugin for WordPress.
  *
+=======
+ * wp-cli.php
+ *
+ * The wp cli file.
+ *
+ * PHP versions 5
+ *
+ * @category  UserAccessManager
+ * @package   UserAccessManager
+ * @author    Nils Woetzel nils.woetzel@h-its.org
+ * @author    Alexander Schneider <alexanderschneider85@googlemail.com>
+ * @copyright 2008-2016 Alexander Schneider
+ * @license   http://www.gnu.org/licenses/gpl-2.0.html  GNU General Public License, version 2
+ * @version   SVN: $Id$
+ * @link      http://wordpress.org/extend/plugins/user-access-manager/
+>>>>>>> master
  */
 
 if (!defined('ABSPATH')) {
     die();
 }
 
-if( !defined('WP_CLI') || !WP_CLI) {
+if (!defined('WP_CLI') || !WP_CLI) {
     die();
 }
 
 /**
- * manage groups in the user-access-manager plugin
+ * The group command class.
  *
- * @package wp-cli
- * @subpackage commands/community
- * @maintainer nwoetzel
- * @author Nils Woetzel nils.woetzel@h-its.org
+ * @category UserAccessManager
+ * @package  UserAccessManager
+ * @author   Alexander Schneider <alexanderschneider85@gmail.com>
+ * @author   Nils Woetzel nils.woetzel@h-its.org
+ * @license  http://www.gnu.org/licenses/gpl-2.0.html  GNU General Public License, version 2
+ * @link     http://wordpress.org/extend/plugins/user-access-manager/
  */
-class Groups_Command extends \WP_CLI\CommandWithDBObject {
-    private static $aAllowedAccessValues = array( "group", "all");
+class Groups_Command extends \WP_CLI\CommandWithDBObject
+{
+    private static $aAllowedAccessValues = array('group', 'all');
 
-    protected $obj_type = 'uam_accessgroup';
-    protected $obj_fields = array(
-            'ID',
-            'groupname',
-            'groupdesc',
-            'read_access',
-            'write_access',
-            'roles',
-            'ip_range',
+    protected $sObjectType = 'uam_accessgroup';
+    protected $aObjectFields = array(
+        'ID',
+        'groupname',
+        'groupdesc',
+        'read_access',
+        'write_access',
+        'roles',
+        'ip_range',
     );
 
-    private $userAccessManager;
-    public function __construct() {
-        $this->userAccessManager = new UserAccessManager();
+    private $oUserAccessManager;
+
+    /**
+     * Groups_Command constructor
+     */
+    public function __construct()
+    {
+        $this->oUserAccessManager = new UserAccessManager();
     }
 
-        /**
+    /**
      * list groups
      *
      * ## OPTIONS
@@ -53,31 +78,34 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
      *
      * @subcommand list
      */
-    public function list_( $_, $assoc_args) {
-        $aUamUserGroups = $this->userAccessManager->getAccessHandler()->getUserGroups();
+    public function list_($_, $assoc_args)
+    {
+        $aUamUserGroups = $this->oUserAccessManager->getAccessHandler()->getUserGroups();
 
         if (!isset($aUamUserGroups)) {
-            WP_CLI:error( "no groups defined yet!");
+            WP_CLI:
+            error("no groups defined yet!");
         }
 
-        $groups = array();
+        $aGroups = array();
 
         foreach ($aUamUserGroups as $oUamUserGroup) {
-            $group = array();
-            $group[ 'ID'          ] = $oUamUserGroup->getId();
-            $group[ 'groupname'   ] = $oUamUserGroup->getGroupName();
-            $group[ 'groupdesc'   ] = $oUamUserGroup->getGroupDesc();
-            $group[ 'read_access' ] = $oUamUserGroup->getReadAccess();
-            $group[ 'write_access'] = $oUamUserGroup->getWriteAccess();
-            $group[ 'roles'       ] = implode( ",", array_keys( $oUamUserGroup->getObjectsFromType('role')));
-            $group[ 'ip_range'    ] = $oUamUserGroup->getIpRange() == null ? "" : $oUamUserGroup->getIpRange();
+            $aGroup = array(
+                'ID' => $oUamUserGroup->getId(),
+                'groupname' => $oUamUserGroup->getGroupName(),
+                'groupdesc' => $oUamUserGroup->getGroupDesc(),
+                'read_access' => $oUamUserGroup->getReadAccess(),
+                'write_access' => $oUamUserGroup->getWriteAccess(),
+                'roles' => implode(',', array_keys($oUamUserGroup->getObjectsFromType(UserAccessManager::ROLE_OBJECT_TYPE))),
+                'ip_range' => $oUamUserGroup->getIpRange() === null ? '' : $oUamUserGroup->getIpRange()
+            );
 
             // add current group
-            $groups[] = $group;
+            $aGroups[] = $aGroup;
         }
 
-        $formatter = $this->get_formatter( $assoc_args );
-        $formatter->display_items( $groups );
+        $oFormatter = $this->getFormatter($assoc_args);
+        $oFormatter->display_items($aGroups);
     }
 
     /**
@@ -93,22 +121,31 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
      *
      * @subcommand del
      */
-    public function del( $_, $assoc_args) {
-        if( count( $_) < 1) {
-            WP_CLI::error("Expected: wp uam groups del <id> ..");
+    public function del($_, $assoc_args)
+    {
+        if (count($_) < 1) {
+            WP_CLI::error('Expected: wp uam groups del <id> ..');
         }
 
         foreach ($_ as $delId) {
-            if ($this->userAccessManager->getAccessHandler()->getUserGroups($delId) == null) {
-                WP_CLI::error( "no group with this id: " . $delId);
+            if ($this->oUserAccessManager->getAccessHandler()->getUserGroups($delId) == null) {
+                WP_CLI::error('no group with this id: ' . $delId);
             }
-            $this->userAccessManager->getAccessHandler()->deleteUserGroup($delId);
+            $this->oUserAccessManager->getAccessHandler()->deleteUserGroup($delId);
         }
-        WP_CLI::success( "successfully deleted groups: " . implode( " ", $_));
+        WP_CLI::success('successfully deleted groups: ' . implode(' ', $_));
     }
 
-    protected function get_formatter( &$assoc_args ) {
-        return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
+    /**
+     * Returns the formatter
+     *
+     * @param $assoc_args
+     * 
+     * @return \WP_CLI\Formatter
+     */
+    protected function getFormatter(&$assoc_args)
+    {
+        return new \WP_CLI\Formatter($assoc_args, $this->aObjectFields, $this->sObjectType);
     }
 
     /**
@@ -134,82 +171,89 @@ class Groups_Command extends \WP_CLI\CommandWithDBObject {
      * wp uam groups add fighters --read_access=all
      *
      */
-    public function add( $_, $assoc_args) {
-        $porcelain = isset( $assoc_args[ "porcelain"]);
-
-        $groupname      = $_[0];
-
-        $aUamUserGroups = $this->userAccessManager->getAccessHandler()->getUserGroups();
+    public function add($_, $assoc_args)
+    {
+        $blPorcelain = isset($assoc_args['porcelain']);
+        $sGroupName = $_[0];
+        $aUamUserGroups = $this->oUserAccessManager->getAccessHandler()->getUserGroups();
 
         foreach ($aUamUserGroups as $oUamUserGroup) {
-            if( $oUamUserGroup->getGroupName() == $groupname) {
-                WP_CLI::error( "group with the same name already exists: " . $oUamUserGroup->getId());
+            if ($oUamUserGroup->getGroupName() == $sGroupName) {
+                WP_CLI::error('group with the same name already exists: ' . $oUamUserGroup->getId());
             }
         }
 
-        $groupdesc      = $assoc_args[ 'groupdesc'];
-        $read_access    = $assoc_args[ 'read_access'];
-        $write_access   = $assoc_args[ 'write_access'];
-        $ip_range       = $assoc_args[ 'ip_range'];
+        $sGroupDescription = $assoc_args['groupdesc'];
+        $read_access = $assoc_args['read_access'];
+        $write_access = $assoc_args['write_access'];
+        $ip_range = $assoc_args['ip_range'];
 
-        $oUamUserGroup = new UamUserGroup($this->userAccessManager->getAccessHandler(), null);
+        $oUamUserGroup = new UamUserGroup($this->oUserAccessManager->getAccessHandler(), null);
 
-        if( !in_array( $read_access, self::$aAllowedAccessValues)) {
-            if( !$porcelain) {
-                WP_CLI::line( "setting read_access to ".self::$aAllowedAccessValues[0]);
+        if (!in_array($read_access, self::$aAllowedAccessValues)) {
+            if (!$blPorcelain) {
+                WP_CLI::line('setting read_access to ' . self::$aAllowedAccessValues[0]);
             }
             $read_access = self::$aAllowedAccessValues[0];
         }
 
-        if( !in_array( $write_access, self::$aAllowedAccessValues)) {
-            if( !$porcelain) {
-                WP_CLI::line( "setting write_access to ".self::$aAllowedAccessValues[0]);
+        if (!in_array($write_access, self::$aAllowedAccessValues)) {
+            if (!$blPorcelain) {
+                WP_CLI::line('setting write_access to ' . self::$aAllowedAccessValues[0]);
             }
             $write_access = self::$aAllowedAccessValues[0];
         }
 
-        $oUamUserGroup->setGroupName(   $groupname);
-        $oUamUserGroup->setGroupDesc(   $groupdesc);
-        $oUamUserGroup->setReadAccess(  $read_access);
-        $oUamUserGroup->setWriteAccess( $write_access);
-        $oUamUserGroup->setIpRange(     $ip_range);
+        $oUamUserGroup->setGroupName($sGroupName);
+        $oUamUserGroup->setGroupDesc($sGroupDescription);
+        $oUamUserGroup->setReadAccess($read_access);
+        $oUamUserGroup->setWriteAccess($write_access);
+        $oUamUserGroup->setIpRange($ip_range);
 
         // add roles
-        if( isset( $assoc_args[ 'roles'])) {
-            $roles = explode( ",", $assoc_args[ 'roles']);
+        if (isset($assoc_args['roles'])) {
+            $roles = explode(',', $assoc_args['roles']);
 
-            $oUamUserGroup->unsetObjects('role', true);
+            $oUamUserGroup->unsetObjects(UserAccessManager::ROLE_OBJECT_TYPE, true);
 
             foreach ($roles as $role) {
-                $oUamUserGroup->addObject('role', $role);
+                $oUamUserGroup->addObject(UserAccessManager::ROLE_OBJECT_TYPE, $role);
             }
         }
 
         $oUamUserGroup->save();
 
-        $this->userAccessManager->getAccessHandler()->addUserGroup($oUamUserGroup);
+        $this->oUserAccessManager->getAccessHandler()->addUserGroup($oUamUserGroup);
 
-        if( $porcelain) {
-            WP_CLI::line( $oUamUserGroup->getId());
-        }
-        else {
-            WP_CLI::success( "added new group " . $groupname . " with id " . $oUamUserGroup->getId());
+        if ($blPorcelain) {
+            WP_CLI::line($oUamUserGroup->getId());
+        } else {
+            WP_CLI::success('added new group ' . $sGroupName . ' with id ' . $oUamUserGroup->getId());
         }
     }
 }
 
 /**
- * manage objects in the user-access-manager plugin
+ * The object command class.
  *
- * @package wp-cli
- * @subpackage commands/community
- * @maintainer nwoetzel
+ * @category UserAccessManager
+ * @package  UserAccessManager
+ * @author   Alexander Schneider <alexanderschneider85@gmail.com>
+ * @author   Nils Woetzel nils.woetzel@h-its.org
+ * @license  http://www.gnu.org/licenses/gpl-2.0.html  GNU General Public License, version 2
+ * @link     http://wordpress.org/extend/plugins/user-access-manager/
  */
-class Objects_Command extends WP_CLI_Command {
+class Objects_Command extends WP_CLI_Command
+{
 
-    private $userAccessManager;
-    public function __construct() {
-        $this->userAccessManager = new UserAccessManager();
+    private $oUserAccessManager;
+
+    /**
+     * Objects_Command constructor.
+     */
+    public function __construct()
+    {
+        $this->oUserAccessManager = new UserAccessManager();
     }
 
     /**
@@ -222,6 +266,7 @@ class Objects_Command extends WP_CLI_Command {
      *
      * <object_type>
      * : 'page', 'post', 'user', 'role' or 'category'
+     * : 'page', 'post', 'user', 'role', 'category' or any other term type
      *
      * <object_id>
      * : the id of the object (string for role)
@@ -236,13 +281,14 @@ class Objects_Command extends WP_CLI_Command {
      * wp uam object update category 5      --groups=controller
      *
      */
-    public function __invoke( $_, $assoc_args) {
-        $sOperation  = $_[0];
+    public function __invoke($_, $assoc_args)
+    {
+        $sOperation = $_[0];
         $sObjectType = $_[1];
-        $sObjectId   = $_[2];
+        $sObjectId = $_[2];
 
         // check that operation is valid
-        switch ( $sOperation) {
+        switch ($sOperation) {
             case "add":
                 break;
             case "update":
@@ -250,37 +296,41 @@ class Objects_Command extends WP_CLI_Command {
             case "remove":
                 break;
             default:
-                WP_CLI::error( "operation is not valid: " . $sOperation);
+                WP_CLI::error("operation is not valid: " . $sOperation);
         }
 
-        $oUamAccessHandler = $this->userAccessManager->getAccessHandler();
+        $oUamAccessHandler = $this->oUserAccessManager->getAccessHandler();
 
         // groups passes
-        $groups = array_unique( explode( ",", $assoc_args[ 'groups']));
+        $aGroups = array_unique(explode(',', $assoc_args['groups']));
 
         // convert the string to and associative array of index and group
         $aAddUserGroups = array();
         $aUamUserGroups = $oUamAccessHandler->getUserGroups();
 
         // find the UserGroup object for the ids or strings given on the commandline
-        foreach( $groups as $group) {
-            if( is_numeric( $group)) {
-                $oUamUserGroup = $oUamAccessHandler->getUserGroups( $group);
-                if( !$oUamUserGroup) {
-                    WP_CLI::error( "there is no group with the id: " . $group);
+        foreach ($aGroups as $sGroup) {
+            if (is_numeric($sGroup)) {
+                $oUamUserGroup = $oUamAccessHandler->getUserGroups($sGroup);
+
+                if (!$oUamUserGroup) {
+                    WP_CLI::error("there is no group with the id: " . $sGroup);
                 }
-                $aAddUserGroups[ $group] = $oUamUserGroup;
+
+                $aAddUserGroups[$sGroup] = $oUamUserGroup;
             } else {
-                $found = false;
-                foreach( $aUamUserGroups as $oUamUserGroup) {
-                    if( $oUamUserGroup->getGroupName() == $group) {
-                        $aAddUserGroups[ $oUamUserGroup->getId()] = $oUamUserGroup;
-                        $found = true;
+                $blFound = false;
+
+                foreach ($aUamUserGroups as $oUamUserGroup) {
+                    if ($oUamUserGroup->getGroupName() == $sGroup) {
+                        $aAddUserGroups[$oUamUserGroup->getId()] = $oUamUserGroup;
+                        $blFound = true;
                         break;
                     }
                 }
-                if( !$found) {
-                    WP_CLI::error( "there is no group with the name: " . $group);
+
+                if (!$blFound) {
+                    WP_CLI::error("there is no group with the name: " . $sGroup);
                 }
             }
         }
@@ -288,7 +338,7 @@ class Objects_Command extends WP_CLI_Command {
         $aRemoveUserGroups = $oUamAccessHandler->getUserGroupsForObject($sObjectType, $sObjectId);
         $blRemoveOldAssignments = true;
 
-        switch ( $sOperation) {
+        switch ($sOperation) {
             case "add":
                 $blRemoveOldAssignments = false;
                 break;
@@ -299,7 +349,7 @@ class Objects_Command extends WP_CLI_Command {
                 $aAddUserGroups = array();
                 break;
             default:
-                WP_CLI::error( "operation is not valid: " . $sOperation);
+                WP_CLI::error("operation is not valid: " . $sOperation);
         }
 
         foreach ($aUamUserGroups as $sGroupId => $oUamUserGroup) {
@@ -314,15 +364,15 @@ class Objects_Command extends WP_CLI_Command {
             $oUamUserGroup->save($blRemoveOldAssignments);
         }
 
-        switch ( $sOperation) {
+        switch ($sOperation) {
             case "add":
-                WP_CLI::success( implode( " ", array( "groups:", $assoc_args[ 'groups'], "sucessfully added to", $sObjectType, $sObjectId)));
+                WP_CLI::success(implode(" ", array("groups:", $assoc_args['groups'], "sucessfully added to", $sObjectType, $sObjectId)));
                 break;
             case "update":
-                WP_CLI::success( implode( " ", array( "sucessfully updated", $sObjectType, $sObjectId, "with groups:", $assoc_args[ 'groups'])));
+                WP_CLI::success(implode(" ", array("sucessfully updated", $sObjectType, $sObjectId, "with groups:", $assoc_args['groups'])));
                 break;
             case "remove":
-                WP_CLI::success( implode( " ", array( "sucessfully removed groups:", $assoc_args[ 'groups'], "from", $sObjectType, $sObjectId)));
+                WP_CLI::success(implode(" ", array("sucessfully removed groups:", $assoc_args['groups'], "from", $sObjectType, $sObjectId)));
                 break;
             default:
         }
@@ -330,5 +380,5 @@ class Objects_Command extends WP_CLI_Command {
 }
 
 // add the command
-WP_CLI::add_command( 'uam groups', 'Groups_Command'  );
-WP_CLI::add_command( 'uam objects', 'Objects_Command' );
+WP_CLI::add_command('uam groups', 'Groups_Command');
+WP_CLI::add_command('uam objects', 'Objects_Command');

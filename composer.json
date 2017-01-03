@@ -1,12 +1,26 @@
 {
-	"name" : "nwoetzel/user-access-manager",
-	"description" : "With the \"User Access Manager\"-plugin you can manage the access to your posts, pages and files in wordpress.",
-	"require-dev" : {
-		"wp-cli/wp-cli" : "^0.22.0",
-		"johnpbloch/wordpress" : "4.3.3"
-	},
-	"extra" : {
-		"wordpress-install-dir" : "wp"
-	},
-	"minimum-stability" : "stable"
+  "name": "UserAccessManager",
+  "description": "User Access Manager plugin for Wordpress",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0",
+  "version": "1.2.12",
+  "authors": [
+    {
+      "name": "Alexander Schneider",
+      "email": "alexanderschneider85@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~5.7",
+    "10up/wp_mock": "dev-master",
+    "wp-cli/wp-cli" : "^0.22.0",
+    "johnpbloch/wordpress" : "4.3.3"
+  },
+  "extra" : {
+    "wordpress-install-dir" : "wp"
+  },
+  "minimum-stability" : "stable"
 }

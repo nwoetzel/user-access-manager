@@ -9,7 +9,7 @@
  * @category  UserAccessManager
  * @package   UserAccessManager
  * @author    Alexander Schneider <alexanderschneider85@googlemail.com>
- * @copyright 2008-2013 Alexander Schneider
+ * @copyright 2008-2016 Alexander Schneider
  * @license   http://www.gnu.org/licenses/gpl-2.0.html  GNU General Public License, version 2
  * @version   SVN: $Id$
  * @link      http://wordpress.org/extend/plugins/user-access-manager/
@@ -19,8 +19,6 @@
  * Inserts or update a user group.
  * 
  * @param integer $iUserGroupId The _iId of the user group.
- * 
- * @return null
  */
 function insertUpdateGroup($iUserGroupId)
 {
@@ -48,11 +46,11 @@ function insertUpdateGroup($iUserGroupId)
         $aRoles = null;
     }
 
-    $oUamUserGroup->unsetObjects('role', true);
+    $oUamUserGroup->unsetObjects(UserAccessManager::ROLE_OBJECT_TYPE, true);
     
     if ($aRoles && is_array($aRoles)) {
         foreach ($aRoles as $sRole) {
-            $oUamUserGroup->addObject('role', htmlentities($sRole));
+            $oUamUserGroup->addObject(UserAccessManager::ROLE_OBJECT_TYPE, htmlentities($sRole));
         }
     }
 
@@ -64,9 +62,7 @@ function insertUpdateGroup($iUserGroupId)
 /**
  * Prints the group form.
  * 
- * @param integer $sGroupId The given group _iId.
- * 
- * @return null
+ * @param integer $sGroupId The given group id.
  */
 function getPrintEditGroup($sGroupId = null)
 {
@@ -75,7 +71,8 @@ function getPrintEditGroup($sGroupId = null)
     ?>
     <form method="post" action="<?php
         $aUri = explode("?", $_SERVER["REQUEST_URI"]);
-        echo reset($aUri) . "?page=" . $_GET['page'];
+        $sUri = reset($aUri);
+        echo htmlspecialchars($sUri) . "?page=" . $_GET['page'];
     ?>">
     <?php
     wp_nonce_field('uamInsertUpdateGroup', 'uamInsertUpdateGroupNonce');
@@ -193,11 +190,11 @@ function getPrintEditGroup($sGroupId = null)
     global $wp_roles;
     
     if (isset($sGroupId)) {
-        $aGroupRoles = $oUamUserGroup->getObjectsFromType('role');
+        $aGroupRoles = $oUamUserGroup->getObjectsFromType(UserAccessManager::ROLE_OBJECT_TYPE);
     }
     
     foreach ($wp_roles->role_names as $role => $name) {
-        if ($role != "administrator") {
+        if ($role != 'administrator') {
             ?>
                             <li class="selectit">
                                 <input id="role-<?php echo $role; ?>" type="checkbox"
@@ -308,7 +305,7 @@ if (($postAction == 'updateGroup' || $postAction == 'addGroup')
 if (!$editGroup) {
     ?>
     <div class="wrap">
-        <form method="post" action="<?php echo $_SERVER["REQUEST_URI"]; ?>">
+        <form method="post" action="<?php echo htmlspecialchars($_SERVER["REQUEST_URI"]); ?>">
             <?php wp_nonce_field('uamDeleteGroup', 'uamDeleteGroupNonce'); ?>
             <input type="hidden" value="delgroup" name="action" />
             <h2><?php echo TXT_UAM_MANAGE_GROUP; ?></h2>
@@ -373,11 +370,11 @@ if (!$editGroup) {
                     </td>
                                         <td>
             <?php
-            if ($oUamUserGroup->getObjectsFromType('role')) {
+            if ($oUamUserGroup->getObjectsFromType(UserAccessManager::ROLE_OBJECT_TYPE)) {
                 ?>
                         <ul>
                 <?php
-                foreach ($oUamUserGroup->getObjectsFromType('role') as $sKey => $sRole) {
+                foreach ($oUamUserGroup->getObjectsFromType(UserAccessManager::ROLE_OBJECT_TYPE) as $sKey => $sRole) {
                     ?>
                             <li>
                     <?php

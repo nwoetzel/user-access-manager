@@ -42,3 +42,6 @@ The .git/config file should have the following format:
 ```
 
 and regularly calling `svn2git --rebase` on the master branch will pull in the changes from the trunk, branches and even the new tags. These need to be committed to the origin after they have been applied locally by svn2git.
+=======
+# user-access-manager
+Official mirror of https://plugins.svn.wordpress.org/user-access-manager/
